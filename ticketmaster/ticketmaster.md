@@ -31,10 +31,10 @@ need to comply or have database with ACID properties.
 Let’s assume that our service has 3 billion page views per month and sells 10 million tickets a month.
 
 ### Storage estimation
-Total cities - 500
-Cinemas in each city - 10
-Seats in each cinema - 2000
-Number of shows per cinema - 2
+1. Total cities - 500
+2. Cinemas in each city - 10
+3. Seats in each cinema - 2000
+4. Number of shows per cinema - 2
 
 ---
 Things required to store would be 
@@ -51,8 +51,9 @@ Also, lets assume that it takes 50 bytes to store movies and cinema information 
 which again could be 50 bytes.
 
 
-500 * 10 * 2000 * 2 * (50+50) = 2 GB/day.
-Let's plan for 10 years that is 2GB * 365 * 10 = ~7.3 TB
+`500 * 10 * 2000 * 2 * (50+50) = 2 GB/day.`
+
+Let's plan for 10 years that is 2GB * 365 * 10 = `~7.3 TB`
 
 ## API specifications
 As a customer you will need mostly 2 api call's.
@@ -96,6 +97,7 @@ returns status of reservation :
 ***Fig:Database Design.***
 
 ## Component design
+At a high-level, our web servers will manage users’ sessions, and application servers will handle all the ticket management, storing data in the databases, as well as, work with the cache servers to process reservations.
 
 ### Workflow of the system
 - User searches for a movie.
@@ -124,7 +126,7 @@ We need two daemon services, one to keep track of all active reservations and to
 The other service would be keeping track of all the waiting user requests, and as soon as the required number of seats become available,
 it will notify the (the longest waiting) user to choose the seats, let’s call it WaitingUserService
 
-1. ActiveReservationsService
+1. **ActiveReservationsService**
    - We need a DS that can maintain insertion ordering and can have jump between different keys
    So it would be ideal to use a `HashMap + DLL` or a `LinkedHashMap`.
    - Each of this `LinkedHashMap` will need to be associated w.r.t a particular `showId`.
@@ -139,8 +141,8 @@ it will notify the (the longest waiting) user to choose the seats, let’s call 
         1. Reserved - Indicates that the user has selected the seats but not yet completed the transaction.
         2. Booked - Indicates user has completed and paid for the seats. remove the `BookingId` from memory.
         3. Expired - Indicated user didn't complete the transaction even though he reserved the tickets. Remove `BookingId` from memory.
-2. WaitingUsersService
-    - The DS will be similar to that of *ActiveReservationsService* but instead of using `BookingId` here we
+2. **WaitingUsersService**
+    - The DS will be similar to that of **ActiveReservationsService** but instead of using `BookingId` here we
     need to keep a track of users so 
         ```text
                  showId : LinkedHashMap<userId, Timestamp>
@@ -149,8 +151,8 @@ it will notify the (the longest waiting) user to choose the seats, let’s call 
          ```
     - So, we will keep a track of users based on FCFS in the `LinkedHashMap`.
     - Thus whenever, a `BookingStatus` goes to `Expired` state the corresponding seats would be made available to
-    users in the *WaitingUsersService* based on FCFS. We can limit the maximum capacity of users that can be in the
-    *WaitingUsersService* for not over flooding the DS with infinite users.
+    users in the **WaitingUsersService** based on FCFS. We can limit the maximum capacity of users that can be in the
+    **WaitingUsersService** for not over flooding the DS with infinite users.
     - The service can use [LongPolling](https://en.wikipedia.org/wiki/Push_technology#Long_polling) to constantly
     check the status of reservation.
     
@@ -190,7 +192,7 @@ Once the above database transaction is successful, we can start tracking the res
    - So, in this case if we use `MovieId` for popular movies we may overload a particular server.
    A better solution to be to use `ShowId` to distribute it equally.
    - We can use [Consistent Hashing](https://medium.com/system-design-blog/consistent-hashing-b9134c8a9062) for both the
-   *ActiveReservationsService* and *WaitingUsersService* based on `ShowId`.
+   **ActiveReservationsService** and **WaitingUsersService** based on `ShowId`.
    - Let’s assume for load balancing our Consistent Hashing 10allocates three servers for any Show, so whenever a reservation is expired, the server holding that reservation will do following things:
        1. Update database to remove the Booking (or mark it expired) and update the seats’ Status in ‘Show_Seats’ table.
        2. Remove the reservation from the Linked HashMap.
