@@ -112,7 +112,7 @@ class ParkingSpot {
 }
 ```
 
-### ParkingLot.java
+#### ParkingLot.java
 ParkingLot is the class that is where the main control lies or where the client may call
 this class to park the vehicle.
 
@@ -136,6 +136,7 @@ class ParkingLot {
 
 }
 ```
+
 #### Level.java
 Storing all the level information required by the parking lot.
 
