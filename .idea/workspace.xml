@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b638a16a-6060-4f1c-a2c1-b8067e96a78c" name="Default Changelist" comment="adding the pdf for grokking ood" />
+    <list default="true" id="b638a16a-6060-4f1c-a2c1-b8067e96a78c" name="Default Changelist" comment="adding the pdf for grokking ood">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,7 +47,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1595059722106</updated>
-      <workItem from="1595059723561" duration="10418000" />
+      <workItem from="1595059723561" duration="11039000" />
+      <workItem from="1595123329300" duration="24000" />
     </task>
     <task id="LOCAL-00001" summary="adding parking lot.">
       <created>1595060225605</created>
