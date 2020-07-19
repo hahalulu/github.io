@@ -4,12 +4,36 @@
 	<link rel='stylesheet' href='style.css'>
 	<link rel="shortcut icon" href="http://bit.ly/ghfavicon" width=32px>
 	<link href="https://fonts.googleapis.com/css?family=Crimson+Text" rel="stylesheet">
-	<title>Auto-filled TOC using HTML Slot | @rpsthecoder, Github</title>
+	<title>Grokking the Object Oriented Design Interview</title>
 </head>
-<body>	
-<h1>Grokking the Object Oriented Design Interview</h1>	
+<body>
+<h1>Grokking the Object Oriented Design Interview</h1>
 <div id='toc'></div>	
 <article>
+	<h2 id='h-0' slot='h-0'> Object-Oriented Design and UML</h2>
+	<a href="./grokking-ood/core/object-oriented-basics.html">
+		<h3 id='sh-0-1' slot='sh-0-1'>Object-Oriented Basics</h3>
+	</a>
+	<a href="./grokking-ood/core/OO-analysis-and-design.html">
+		<h3 id='sh-0-2' slot='sh-0-2'>OO Analysis and Design</h3>
+	</a>
+	<a href="./grokking-ood/core/what-is-uml.html">
+		<h3 id='sh-0-3' slot='sh-0-3'>What is UML?</h3>
+	</a>
+	<a href="./grokking-ood/core/use-case-diagram.html">
+		<h3 id='sh-0-4' slot='sh-0-4'>Use Case Diagrams</h3>
+	</a>
+	<a href="./grokking-ood/core/class-diagram.html">
+		<h3 id='sh-0-5' slot='sh-0-5'>Class Diagram</h3>
+	</a>
+	<a href="./grokking-ood/core/sequence-diagram.html">
+		<h3 id='sh-0-6' slot='sh-0-6'>Sequence diagram</h3>
+	</a>
+	<a href="./grokking-ood/core/activity-diagrams.html">
+		<h3 id='sh-0-7' slot='sh-0-7'>Activity Diagrams</h3>
+	</a>
+
+
 	<h2 id='h-1' slot='h-1'>Design a Hotel Management System</h2>
 	<a href="./grokking-ood/examples/java/hotel-management-system.html">
 		<h3 id='sh-1-1' slot='sh-1-1'>Java Implementation</h3>
@@ -140,12 +164,22 @@
 
 </article>
 <footer id='footer'>
-	✰ <strong>Credit</strong>: <br> Text derived from the Wikipedia article on Velociraptor.<br>
-	✰ <strong>Github</strong>: <br> <a href='https://github.com/hongkiat/html-slot-toc' target='_blank'>https://github.com/hongkiat/html-slot-toc</a><br>
-	✰ <strong>Download</strong>: <br> <a href='https://github.com/hongkiat/html-slot-toc/archive/master.zip' target='_blank'>https://github.com/hongkiat/html-slot-toc/archive/master.zip</a>
+	✰ <strong>Credit</strong>: <br>This is a softcopy of the educative.io Grokking the object oriented design interview.<br>
 </footer>
 <template>
 	<ul>
+		<li>
+			<a href='#h-0'><slot name='h-0'></slot></a>
+			<ul>
+				<li><a href='#sh-0-1'><slot name='sh-0-1'></slot></a></li>
+				<li><a href='#sh-0-2'><slot name='sh-0-2'></slot></a></li>
+				<li><a href='#sh-0-3'><slot name='sh-0-3'></slot></a></li>
+				<li><a href='#sh-0-4'><slot name='sh-0-4'></slot></a></li>
+				<li><a href='#sh-0-5'><slot name='sh-0-5'></slot></a></li>
+				<li><a href='#sh-0-6'><slot name='sh-0-6'></slot></a></li>
+				<li><a href='#sh-0-7'><slot name='sh-0-7'></slot></a></li>
+			</ul>
+		</li>
 		<li>
 			<a href='#h-1'><slot name='h-1'></slot></a>
 			<ul>
