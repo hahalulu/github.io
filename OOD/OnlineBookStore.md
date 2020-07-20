@@ -66,7 +66,7 @@ public abstract class Account {
   private String accountId;
   private String password;
   private AccountStatus status; //Prime, Not a prime, 
-  private Person person;
+  private User user;
 
   public boolean resetPassword() { ... };
   //total number of books that the account current has leased; 
