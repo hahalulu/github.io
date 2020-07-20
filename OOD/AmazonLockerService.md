@@ -1,7 +1,7 @@
 # Amazon Locker Service
 You need to make sure the locker size > package.
 
-# Requirements.
+## Requirements.
 1. User should have the ability to select a locker close to their area.
 2. User should have this option while checking out a particular order.
 3. Once the order is placed and expected ETA is known we need a way to estimate the amount of 
