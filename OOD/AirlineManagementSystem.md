@@ -145,5 +145,5 @@ public class Notification {
 }
 ```
 
-we will enum class for all the Status like `PaymentStatus` , `NotificationStatus`, `ReservationStatus` etc.
+we will use enum class for all the Status like `PaymentStatus` , `NotificationStatus`, `ReservationStatus` etc.
 
