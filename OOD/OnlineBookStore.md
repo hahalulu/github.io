@@ -26,7 +26,7 @@ you'll replace `BookLeasing` by `BookSell` and add basically follow online shopp
 
 ## Classes and methods
 
-###Book.java
+### Book.java
 ```java
   private String ISBN;
   private String title;
@@ -38,7 +38,7 @@ you'll replace `BookLeasing` by `BookSell` and add basically follow online shopp
 
 ```
 
-###BookItem.java
+### BookItem.java
 One unit of a Book is a BookItem.
 ```java
   private String barcode;
@@ -51,7 +51,7 @@ One unit of a Book is a BookItem.
   public boolean checkout(String memberId) {...}
 ```
 
-###User.java
+### User.java
 ```java
 public class User {
   private String name;
@@ -60,7 +60,7 @@ public class User {
   private String phone;
 }
 ```
-###Account.java
+### Account.java
 ```java
 public abstract class Account {
   private String accountId;
@@ -84,7 +84,7 @@ public abstract class Account {
 }
 ```
 
-###BookReservation.java
+### BookReservation.java
 ```java
 public class BookReservation {  
   private Date creationDate;
@@ -96,7 +96,7 @@ public class BookReservation {
 }
 
 ```
-###BookLeasing.java
+### BookLeasing.java
 ```java
 public class BookLeasing {
   private Date creationDate;
@@ -115,7 +115,7 @@ public class BookLeasing {
 
 ```
 
-###Catalog.java
+### Catalog.java
 This class will be used by the user to search respective books based on title and author or genre.
 ```java
   private HashMap<String, List<Book>> bookTitles;
@@ -145,7 +145,7 @@ This class will be used by the user to search respective books based on title an
   
 ```
 
-###Fine.java
+### Fine.java
 ```java
   private Date creationDate;
   private double bookItemBarcode;
@@ -153,7 +153,7 @@ This class will be used by the user to search respective books based on title an
 
   public static void collectFine(String accountId, long days) { ... }
 ```
-###Payment.java
+### Payment.java
 ```java
 public class Payment {
 	String paymentId;
@@ -163,7 +163,7 @@ public class Payment {
 	boolean makeTransaction() {...}
 }
 ```
-###Notification.java
+### Notification.java
 ```java
 public class Notification {
 	String notificationId;
