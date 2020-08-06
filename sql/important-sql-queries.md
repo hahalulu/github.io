@@ -1,6 +1,22 @@
  
 # SQL Queries
 
+## Important queries to practise for SQL
+- `CASE WHEN`
+- Self joins.
+- `DISTINCT` and `GROUP BY`
+- Left vs Outer Joins
+- `SUM` and `COUNT`
+- Date-time manipulation
+- String formatting, substring
+- Window functions like `RANK` and `ROW`
+- Subqueries
+- `HAVING` and `WHERE`
+- `LAG` and `LEAD`
+- Understand indexes
+- Running totals
+- `MIN` and `MAX`
+
 <details>
 	<summary> Conditional Logic in a SELECT Statement </summary>
 Q :
