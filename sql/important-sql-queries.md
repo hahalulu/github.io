@@ -9,13 +9,17 @@
 - `SUM` and `COUNT`
 - Date-time manipulation
 - String formatting, substring
-- Window functions like `RANK` and `ROW`
+    - Window functions like `RANK` and `ROW`
 - Subqueries
 - `HAVING` and `WHERE`
 - `LAG` and `LEAD`
 - Understand indexes
 - Running totals
 - `MIN` and `MAX`
+
+---
+
+## Sample Queries
 
 <details>
 	<summary> Conditional Logic in a SELECT Statement </summary>
@@ -339,7 +343,7 @@ WHERE
 
 
 <details>
-	<summary>TOP N Salaries from the entire company</summary>
+	<summary> TOP N Salaries from the entire company</summary>
 	
 ```
 SELECT DISTINCT Salary
@@ -421,7 +425,7 @@ GROUP BY Trips.Request_at
 </details>
 
 <details>
-	<summary>Higher Temperature compared to previous day</summary>
+	<summary> Higher Temperature compared to previous day</summary>
 	
 **Given a Weather table, write a SQL query to find all dates' Ids with higher temperature compared to its previous (yesterday's) dates.**
 	
@@ -436,7 +440,7 @@ where w.Temperature > w1.Temperature;
 
 
 <details>
-	<summary>DELETE Duplicates </summary>
+	<summary> DELETE Duplicates </summary>
 
 **Write a SQL query to delete all duplicate email entries in a table named Person, keeping only unique emails based on its smallest Id.**
 	
@@ -450,7 +454,276 @@ WHERE
 
 <details>
 	<summary> </summary>
+	Question : 
 </details>
 
 
+
+Left join : S
+T 
+
+select s.id,ifnull(t.student,s.student) as student
+from seat s
+left join seat t on ((s.id % 2 = 1 and t.id = s.id + 1) or (s.id % 2 = 0 and t.id = s.id - 1))
+order by s.id;
+
+
+s1, sname1          s1, sname1
+s2, sname2          s2, sname2
+s3, sname3          s3, sname3
+s4, sname4          s4, sname4
+
+--O/p
+
+s1, sname1, s2, sname2
+s3, sname3, s4, sname4
+
+s2, sname2, s1, sname1
+s4, sname4, s3, sname3
+
+
+
+
+#generate a series using joins
+
+#generate date range in oracle
+
+with x
+	   as (
+	select trunc(sysdate,'y')+level-1 dy
+	from t1
+	 connect by level <=
+	    add_months(trunc(sysdate,'y'),12)-trunc(sysdate,'y')
+	)
+	select *
+	from x
+rnk using joins
+select e.job,
+	       e.ename,
+	       (select count(*) from emp d
+	         where e.job=d.job and e.empno < d.empno) as rnk
+	  from emp e
+In SQL,
+“TRUE or NULL” is TRUE, but “FALSE or NULL” is NULL! You must keep this in mind when using IN predicates and when performing logical OR evaluations, and NULL values are involved.
+
+when a query returns nothing then use
+max ,min it will return null if result is empty
+or use a case when col='' then null else col
+
+﻿select f1.col1,f1.col2 from dag f1, dag f2 where f1.col1= f2.col2 and f2.col1=f1.col2 and f1.col2 >= f1.col1
+and f1.col2 != f1.col1
+
+	as
+	select a.*,
+	       case
+	         when (
+	            select b.proj_id
+	              from V b
+	            where a.proj_start = b.proj_end
+	             )
+	             is not null then 0 else 1
+	          end as flag
+	from V a```
+	
+select a.proj_id,a.proj_start,a.proj_end,
+       (select sum(b.flag)
+          from v2 b
+         where b.proj_id <= a.proj_id) as proj_grp
+  from v2 a
+
+select proj_id,proj_start,proj_end,
+       sum(flag)over(order by proj_id) proj_grp
+  from (
+select proj_id,proj_start,proj_end,
+       case when
+            lag(proj_end)over(order by proj_id) = proj_start
+            then 0 else 1
+       end flag
+  from V
+       )
+
+
+  
+   
+## RUNNING TOTAL
+
+select e.hiredate,
+	       e.sal,
+	       (select sum(sal) from emp d
+	        where d.hiredate between e.hiredate-90
+	                             and e.hiredate) as spending_pattern
+	  from emp e
+	 order by 1
+	
+
+	
+	
+		 1 select hiredate,
+    	 2        sal,
+    	 3        sum(sal)over(order by days(hiredate)
+    	 4                        range between 90 preceding
+    	 5                          and current row) spending_pattern
+    	 6   from emp 
+    	 
+    	 
+	 select ename,
+     	       deptno,
+     	       count(*)over(partition by deptno) deptno_cnt,
+     	       job,
+     	       count(*)over(partition by job) job_cnt,
+     	       count(*)over() total
+     	  from emp
+     	  
+     	   1 select e.ename,
+          	 2        e.deptno,
+          	 3        (select count(*) from emp d
+          	 4          where d.deptno = e.deptno) as deptno_cnt,
+          	 5        job,
+          	 6        (select count(*) from emp d
+          	 7          where d.job = e.job) as job_cnt,
+          	 8        (select count(*) from emp) as total
+          	 9   from emp e
+          	 
+      
+      
+      
+-- take special care of count(*) vs count (sal) to calculate the rank using subquery, it affects ranks
+
+   select  d.name as department, a.employee as employee, a.salary as salary from (
+   select e.name as employee , e.salary ,
+        (select count(distinct(Salary))from employee as i where i.departmentid = e.departmentid and i.salary>e.salary )
+       as rk, e.departmentid  from employee as e) as a   join department d on a.departmentid = d.id  
+       where a.rk<=2 order by d.name , a.salary desc
+       
+select distinct t1.*
+   from stadium t1, stadium t2, stadium t3
+   where t1.people >= 100 and t2.people >= 100 and t3.people >= 100
+   and
+   (
+   	  (t1.id - t2.id = 1 and t1.id - t3.id = 2 and t2.id - t3.id =1)  -- t1, t2, t3
+       or
+       (t2.id - t1.id = 1 and t2.id - t3.id = 2 and t1.id - t3.id =1) -- t2, t1, t3
+       or
+       (t3.id - t2.id = 1 and t2.id - t1.id =1 and t3.id - t1.id = 2) -- t3, t2, t1
+   )
+   order by t1.id
+   ;
+select distinct sta_0.* 
+from stadium as sta_0, (
+ select case
+         when people>=100 then @count:=@count+1
+         else @count:=0
+     end as total, id
+ from stadium, (select @count:=0) as temp
+) as sta_1 
+where 
+sta_1.total >= 3 and 
+sta_0.id <= sta_1.id and 
+sta_0.id >= sta_1.id - sta_1.total + 1;
+SELECT DISTINCT
+    l1.Num AS ConsecutiveNums
+FROM
+    Logs l1,
+    Logs l2,
+    Logs l3
+WHERE
+    l1.Id = l2.Id - 1
+    AND l2.Id = l3.Id - 1
+    AND l1.Num = l2.Num
+    AND l2.Num = l3.Num
+
+select distinct num as consecutiveNums
+from 
+(select num,sum(c) over (order by id) as flag from
+(
+select id, num, case when LAG(Num) OVER (order by id)- Num = 0 then 0 else 1 end as c
+from logs
+) a
+) b
+group by num,flag
+having count(*) >=3 --(could change 3 to any number)
+
+
+SELECT Request_at as Day, 
+       ROUND(SUM(CASE WHEN Status LIKE 'cancelled%' THEN 1 ELSE 0 END) / COUNT(*), 2) as "Cancellation Rate"
+FROM(
+    SELECT * FROM Trips t
+    WHERE
+        t.Client_Id not in (select Users_Id from Users where Banned = 'Yes') AND
+        t.Driver_Id not in (select Users_Id from Users where Banned = 'Yes') AND
+        t.Request_at between '2013-10-01' and '2013-10-03'
+    ) AS newT
+GROUP BY Request_at
+
+select t.request_at "Day",
+    round(
+        sum(case
+              when t.status = 'cancelled_by_driver' then 1
+              when t.status = 'cancelled_by_client' then 1
+              else 0
+            end)
+		/ count(*)
+	, 2) "Cancellation Rate"
+from Trips t
+join Users c on c.users_id = t.client_id and c.banned = 'No'
+join Users d on d.users_id = t.driver_id and d.banned = 'No'
+where
+t.request_at between '2013-10-01' and '2013-10-03'
+group by t.request_at
+order by t.request_at
+
+date overlap
+	1 select a.empno,a.ename,
+	2        'project '||b.proj_id||
+	3        ' overlaps project '||a.proj_id as msg
+	4   from emp_project a,
+	5        emp_project b
+	6  where a.empno = b.empno
+	7    and b.proj_start >= a.proj_start
+	8    and b.proj_start <= a.proj_end
+	9    and a.proj_id != b.proj_id
+	
+	
+	
+
+select e.deptno,
+	       e.ename,
+	       e.hiredate,
+	       e.sal,
+	       (select min(sal) from emp d
+	         where d.deptno=e.deptno
+	           and d.hiredate =
+	                (select min(hiredate) from emp d
+	                  where e.deptno=d.deptno
+	                    and d.hiredate > e.hiredate)) as next_sal
+	  from emp e
+	order by 1
+	
+	
+	
+
+1 select proj_id, proj_start, proj_end
+	2   from (
+	3 select proj_id, proj_start, proj_end,
+	4        lead(proj_start)over(order by proj_id) next_proj_start
+	5   from V
+	6        )
+	7 where next_proj_start = proj_end
+
+	1 select v1.proj_id,
+	2        v1.proj_start,
+	3        v1.proj_end
+	4   from V v1, V v2
+	5 where v1.proj_end = v2.proj_start
+	
+	
+	select deptno,ename,sal,hiredate, sal-next_sal diff
+    	  from (
+    	select deptno,ename,sal,hiredate,
+    	       lead(sal)over(partition by deptno order by hiredate) next_sal
+    	  from emp
+    	       )
+    	       
+    	       
+	
 
