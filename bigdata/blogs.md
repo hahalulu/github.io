@@ -7,3 +7,9 @@
 4. [uReplicator](https://eng.uber.com/ureplicator-apache-kafka-replicator/)
 5. [MirrorMaker](https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=27846330)
 
+
+
+
+[Netflix Blog's]()
+[Uber Blog's]()
+[Pintrest Blog's]()
