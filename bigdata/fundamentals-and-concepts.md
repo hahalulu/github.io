@@ -96,8 +96,24 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 ## Good reads
 [Why GCP is better than AWS?](https://nandovillalba.medium.com/why-i-think-gcp-is-better-than-aws-ea78f9975bda)
 
+## Data modelling 
+[Parent child relationship in data modelling using Avro](https://www.linkedin.com/pulse/parent-child-relationships-you-joshua-hartman/)
+
+[Avro Schema Composition](https://mykidong.medium.com/howto-implement-avro-schema-inheritance-757d2897c1ad)
+
+[Data Governance using Avro and Kafka](https://medium.com/@sderosiaux/governing-data-with-kafka-avro-ecfb665f266c)
 
 
+
+### Avro examples
+
+### Avro tools and code
+
+
+### Proto examples 
+
+### Proto tools and code
+    
 
  
 
