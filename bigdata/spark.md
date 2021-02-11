@@ -57,6 +57,16 @@ how=left,right,inner,outer
 ex : `empDF.join(deptDF,empDF.emp_dept_id ==  deptDF.dept_id, "inner")`
 
 
+## Tackling Data Skewness in Spark
+- [Iterative Broadcaast Join optimization](https://github.com/godatadriven/iterative-broadcast-join)
+- [Data Skewness](https://bigdatacraziness.wordpress.com/2018/01/05/oh-my-god-is-my-data-skewed/)
+- [Salting code in Python to reduce data skew](https://datarus.wordpress.com/2015/05/04/fighting-the-skew-in-spark/)
+- [Trouble shooting data skewness](https://dzone.com/articles/why-your-spark-apps-are-slow-or-failing-part-ii-da)
+
+
+
+## Ideal Paritition count 
+The recommended number of partitions is around 3 or 4 times the number of CPUs in the cluster so that the work gets distributed more evenly among the CPUs.
 
 
 
@@ -64,11 +74,14 @@ ex : `empDF.join(deptDF,empDF.emp_dept_id ==  deptDF.dept_id, "inner")`
 
 
 
+## Data Modelling interview questions
+[Interview questions](https://www.guru99.com/data-modeling-interview-questions-answers.html)
 
 
-### Hadoop's basics
+## Hadoop's basics
 
 **What are the 5 V's in big data**
+
 Volume: Quantity of the data.
 Velocity : How much data
 Variety : Different types of data.
@@ -76,6 +89,7 @@ Veracity : Accuracy of the data.
 Value : Importance of the data, vizualization, 
 
 **Types of data**
+
 Structured Data (RDBMS),
 Un-structured data (Files, Audio, Video)
 Semi-structered (JSON, XML)
