@@ -45,7 +45,10 @@ Now imagine writing a general purpose xml or json parser, and all the ambiguitie
 - Snapshot serialization: In databases, and transaction processing (transaction management), snapshot isolation is a guarantee that all reads made in a transaction will see a consistent snapshot of the database (in practice it reads the last committed values that existed at the time it started), and the transaction itself will successfully commit only if no updates it has made conflict with any concurrent updates made since that snapshot.
 [Isolation levels](https://docs.databricks.com/delta/optimizations/isolation-level.html)
     
-### what is Z
+### Data Skipping and Z-ordering
+- [Data Skipping and Z-ordering in Delta lake](https://engineering.salesforce.com/boost-delta-lake-performance-with-data-skipping-and-z-order-75c7e6c59133)
+- [Databricks optimization technique](https://docs.databricks.com/delta/optimizations/file-mgmt.html#compaction-bin-packing)
+
     
 
 ## Apache Hudi / Delta Lake / Apache Iceberg.
@@ -80,10 +83,15 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 #### Apache Iceberg
 (TODO)
 
+### Natural Keys vs Synthetic Keys.
+
+
 ## Apache Kafka
 [Apache Kafka Schema management](https://docs.confluent.io/platform/current/schema-registry/index.html#)
 [Kafka avro vs Kafka proto](https://simon-aubury.medium.com/kafka-with-avro-vs-kafka-with-protobuf-vs-kafka-with-json-schema-667494cbb2af)
 
+## Apache Kinesis
+[Medium blog on Kinesis](https://medium.com/@yashbindlish1/amazon-kinesis-the-core-of-real-time-streaming-a543085a212f)
 
 
 ### Kinesis vs Kafka

@@ -7,6 +7,42 @@ Everyday I'm shuffling
 2.x - DataSets / Dataframe
     
 
+### Important Spark Tutorials and Blog
+[Important spark links - D-Zone](https://dzone.com/articles/the-complete-apache-spark-collection-tutorials-and)
+
+
+
+## re-partition vs coalesce 
+```text
+Keep in mind that repartitioning your data is a fairly expensive operation. Spark also has an optimized version of repartition() called coalesce() that allows avoiding data movement, but only if you are decreasing the number of RDD partitions.
+```
+ex:
+
+```text
+406
+
+It avoids a full shuffle. If it's known that the number is decreasing then the executor can safely keep data on the minimum number of partitions, only moving the data off the extra nodes, onto the nodes that we kept.
+
+So, it would go something like this:
+
+Node 1 = 1,2,3
+Node 2 = 4,5,6
+Node 3 = 7,8,9
+Node 4 = 10,11,12
+Then coalesce down to 2 partitions:
+
+Node 1 = 1,2,3 + (10,11,12)
+Node 3 = 7,8,9 + (4,5,6)
+Notice that Node 1 and Node 3 did not require its original data to move.
+```
+
+**Difference between coalesce and repartition**
+
+coalesce uses existing partitions to minimize the amount of data that's shuffled. repartition creates new partitions and does a full shuffle. coalesce results in partitions with different amounts of data (sometimes partitions that have much different sizes) and repartition results in roughly equal sized partitions.
+
+
+
+
 ### Spark SQL joins & performance tuning
 [Join strategies](https://towardsdatascience.com/strategies-of-spark-join-c0e7b4572bcf)
 
@@ -64,14 +100,53 @@ ex : `empDF.join(deptDF,empDF.emp_dept_id ==  deptDF.dept_id, "inner")`
 - [Trouble shooting data skewness](https://dzone.com/articles/why-your-spark-apps-are-slow-or-failing-part-ii-da)
 
 
+## Tackling memory issues in spark
+- [Troubleshooting memory issues in spark](https://dzone.com/articles/common-reasons-your-spark-applications-are-slow-or)
+
+## Spark Optimization
+- [Spark Core - Proper Optimization](https://www.youtube.com/watch?v=daXEp4HmS-E&ab_channel=Databricks) (TODO)
+
+
+## GroupBy vs ReduceBy
+[Stack Overflow - differences](https://medium.com/@sderosiaux/governing-data-with-kafka-avro-ecfb665f266c)
+```text
+
+Group by Key
+
+sparkContext.textFile("s3://../..")
+			.flatMap(lambda line: line.split())
+			.map(lambda word: (word,1))
+			.groupByKey()
+			map(lambda (w,counts) : (w, sum(counts)))
+
+
+Reduce By Key
+
+spaarkContext.textFile("s3://../..")
+			.flatMap(lambda line: line.split())
+			.map(lambda word: (word,1))
+			reduceByKey(lambda a,b : a+b)
+
+
+Reduce by key will perform better because it will combine the results in the node before sending it over.
+whereas GBK all the records will have to be moved to
+its respective partitions in appropriate nodes.
+
+
+We can not always apply ReduceByKey as ReduceByKey requires combining all the values into another value 
+with the exact same type.
+
+aggregateByKey, foldByKey, combineByKey
+```
+
+## Spark Cluster Management
+[Deep Dive](https://dzone.com/articles/deep-dive-into-spark-cluster-management)
+
 
 ## Ideal Paritition count 
 The recommended number of partitions is around 3 or 4 times the number of CPUs in the cluster so that the work gets distributed more evenly among the CPUs.
 
-
-
-
-
+### What is synthetic keys in hive? What are they used for?
 
 
 ## Data Modelling interview questions
