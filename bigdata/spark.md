@@ -1,8 +1,4 @@
 
-
-Everyday I'm shuffling 
-
-
 1.x - RDD framework
 2.x - DataSets / Dataframe
     
@@ -14,12 +10,13 @@ Everyday I'm shuffling
 
 ## re-partition vs coalesce 
 ```text
-Keep in mind that repartitioning your data is a fairly expensive operation. Spark also has an optimized version of repartition() called coalesce() that allows avoiding data movement, but only if you are decreasing the number of RDD partitions.
+Keep in mind that repartitioning your data is a fairly expensive operation. 
+Spark also has an optimized version of repartition() called coalesce() that allows avoiding data movement,
+ but only if you are decreasing the number of RDD partitions.
 ```
 ex:
 
 ```text
-406
 
 It avoids a full shuffle. If it's known that the number is decreasing then the executor can safely keep data on the minimum number of partitions, only moving the data off the extra nodes, onto the nodes that we kept.
 

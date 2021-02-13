@@ -60,10 +60,10 @@ Now imagine writing a general purpose xml or json parser, and all the ambiguitie
 
 1. Transaction or ACID ability.
 2. Time travel, concurrence read, and write.
-3. Support for batch and streaming
-4. Since data is allowed to be late in streaming we need to have a mechanism like data mutation and data correction which would allow the right data to merge into the base dataset and the correct base dataset to follow for the business view of the report for end-user.
+3. Support for both batch and streaming
+4. data could be late in streaming, thus we need to have a mechanism like data mutation and data correction which would allow the right data to merge into the base dataset, and the correct base dataset to follow for the business view of the report for end-user.
 5. As the table made changes around with the business over time. So we also expect that data lake to have features like Schema Evolution and Schema Enforcements, which could update a Schema over time.
-6. Data Lake is, independent of the engines and the underlying storages.
+6. Data Lake is, independent of the engines and the underlying storage's.
 
 #### Delta Lake
 - [How traansactions work in delta lake](https://databricks.com/blog/2019/08/21/diving-into-delta-lake-unpacking-the-transaction-log.html)
@@ -71,7 +71,7 @@ i. Dealing with Multiple Concurrent Reads and Writes, uses optimistic concurrenc
 ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 - [How schema validation and schema evolution works](https://databricks.com/blog/2019/09/24/diving-into-delta-lake-schema-enforcement-evolution.html)
 - [Update/Merge/Delete](https://databricks.com/blog/2020/09/29/diving-into-delta-lake-dml-internals-update-delete-merge.html)
-  - Scan for records , select those files, update those file, old files are tombstoned.
+  - Scan for records , select those files, update those file, old files are tombstone.
   - TODO : need to understand all performance tuning in this case.
   
 - [Optimize File Management (compaction)](https://docs.databricks.com/delta/optimizations/file-mgmt.html#compaction-bin-packing)
@@ -87,11 +87,29 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 
 
 ## Apache Kafka
+[Basics of kafka ecosystem]()
+
 [Apache Kafka Schema management](https://docs.confluent.io/platform/current/schema-registry/index.html#)
 [Kafka avro vs Kafka proto](https://simon-aubury.medium.com/kafka-with-avro-vs-kafka-with-protobuf-vs-kafka-with-json-schema-667494cbb2af)
 
+[Kafka Exactly once (Effectively once), Atleast once](https://medium.com/@andy.bryant/processing-guarantees-in-kafka-12dd2e30be0e)
+[Original confluent blog for kafka exactly once](https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/)
+
+[How to achieve strict ordering in kafka](https://www.cloudkarafka.com/blog/2018-08-21-faq-apache-kafka-strict-ordering.html)
+
+[Read topic from beginning](https://riptutorial.com/apache-kafka/example/19390/how-can-i-read-topic-from-its-beginning)
+
+[Kafka storage internals](https://medium.com/@durgaswaroop/a-practical-introduction-to-kafka-storage-internals-d5b544f6925f#:~:text=To%20confirm%20that%20the%20messages,what's%20inside%20that%20log%20file.&text=Kafka%20stores%20all%20the%20messages,also%20called%20as%20the%20Offset%20.)
+
+[Disaster recovery for kafka multi-region uber](https://eng.uber.com/kafka/) todo
+
+[Read data from closest replica for reducing the latency](https://developers.redhat.com/blog/2020/04/29/consuming-messages-from-closest-replicas-in-apache-kafka-2-4-0-and-amq-streams/)
+[Proposal for closest replica changes](https://cwiki.apache.org/confluence/display/KAFKA/KIP-392%3A+Allow+consumers+to+fetch+from+closest+replica)
+
+
 ## Apache Kinesis
 [Medium blog on Kinesis](https://medium.com/@yashbindlish1/amazon-kinesis-the-core-of-real-time-streaming-a543085a212f)
+
 
 
 ### Kinesis vs Kafka
