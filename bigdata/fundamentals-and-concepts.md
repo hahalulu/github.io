@@ -35,15 +35,42 @@ Let's compare a basic example of an integer:
 
 Now imagine writing a general purpose xml or json parser, and all the ambiguities and scenarios you need to handle just at the text layer, then you need to map the text token "id" to a member, then you need to do an integer parse on "42". In protobuf, the payload is smaller, plus the math is simple, and the member-lookup is an integer (so: suitable for a very fast switch/jump).
 
-### How bucketing reduces shuffling?
+## Bucketing and partitioning
+Partitioning data is often used for distributing load horizontally, this has performance benefit,
+and helps in organizing data in a logical fashion. Example: if we are dealing with a large `employee` table
+and often run queries with `WHERE` clauses that restrict the results to a particular country or department .
+For a faster query response Hive table can be `PARTITIONED BY (country STRING, DEPT STRING)`.
+Partitioning tables changes how Hive structures the data storage and Hive will now create subdirectories reflecting the partitioning structure like
+
+>../employees/country=ABC/DEPT=XYZ.
+
+If query limits for `employee from country=ABC`,
+it will only scan the contents of one directory `country=ABC`. This can dramatically improve query performance,
+but only if the partitioning scheme reflects common filtering. Partitioning feature is very useful in Hive,
+however, a design that creates too many partitions may optimize some queries, but be detrimental for other important queries.
+Other drawback is having too many partitions is the large number of Hadoop files and directories that are created
+unnecessarily and overhead to NameNode since it must keep all metadata for the file system in memory.
+
+Bucketing is another technique for decomposing data sets into more manageable parts.
+For example, suppose a table using date as the top-level partition and `employee_id` as the second-level
+partition leads to too many small partitions. Instead, if we bucket the employee table and use `employee_id`
+as the bucketing column, the value of this column will be hashed by a user-defined number into buckets. 
+Records with the same `employee_id` will always be stored in the same bucket. Assuming the number of employee_id is
+much greater than the number of buckets, each bucket will have many `employee_id`. While creating table you can specify
+like `CLUSTERED BY (employee_id) INTO XX  BUCKETS`; where `XX` is the number of buckets . Bucketing has several advantages.
+The number of buckets is fixed so it does not fluctuate with data. If two tables are bucketed by `employee_id`, Hive can create
+a logically correct sampling. Bucketing also aids in doing efficient map-side joins etc.
+
+### Static partitions and dynamic partitions
+
+[How bucketing reduces shuffling? ByteDance](https://databricks.com/session_na20/bucketing-2-0-improve-spark-sql-performance-by-removing-shuffle)
 
 
 ### Bloom filter and how it improves the performance
 [What is bloom filter](http://hadoopnalgos.blogspot.com/2017/02/bloom-filter.html)
 [Addvantages of bloom filter](https://stackoverflow.com/questions/4282375/what-is-the-advantage-to-using-bloom-filters)
 TL;DR - Used to check if element is definitely not there.
-[Online bloom filter playground][https://llimllib.github.io/bloomfilter-tutorial/
-]
+[Online bloom filter playground](https://llimllib.github.io/bloomfilter-tutorial/)
 ```text
 A false positive means that the results say you have the condition you were tested for, 
 but you really don't. With a false negative, the results say you don't have a condition, but you really do.
@@ -142,13 +169,15 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 
 
 ## Avro vs Parquet
-###COMPARISONS BETWEEN DIFFERENT FILE FORMATS
+### COMPARISONS BETWEEN DIFFERENT FILE FORMATS
+
 **AVRO vs PARQUET**
 - AVRO is a row-based storage format whereas PARQUET is a columnar based storage format.
 - PARQUET is much better for analytical querying i.e. reads and querying are much more efficient than writing.
 - Write operations in AVRO are better than in PARQUET.
 - AVRO is much matured than PARQUET when it comes to schema evolution. PARQUET only supports schema append whereas AVRO supports a much-featured schema evolution i.e. adding or modifying columns.
 - PARQUET is ideal for querying a subset of columns in a multi-column table. AVRO is ideal in case of ETL operations where we need to query all the columns.
+
 **ORC vs PARQUET**
 - PARQUET is more capable of storing nested data.
 - ORC is more capable of Predicate Pushdown.
@@ -174,13 +203,191 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 [How compression effects file splitting](http://comphadoop.weebly.com/)
 
 ### Avro examples
+```json
+{
+  "type": "record",
+  "name": "Address",
+  "namespace": "com.company.base.Address",
+  "fields": [
+    {
+      "name": "streetaddress",
+      "type": "string"
+    },
+    {
+      "name": "city",
+      "type": "string"
+    }
+  ]
+}
+```
+```json
+{
+	"name": "traffic_events",
+	"type": "record",
+	"namespace": "ccom.company.base.traffic_events",
+	"fields": [{
+			"name": "offerRequestId",
+			"type": "string",
+			"dot_name": "traffic_events.offerRequestId",
+			"ccpa": [
+				"orid"
+			],
+			"is_required": "true",
+			"flat_map_source": "offerRequestId"
+		},
+		{
+			"name": "eventType",
+			"type": "string",
+			"default": "HomeDetailsEvent",
+			"dot_name": "traffic_events.eventType",
+			"ccpa": [],
+			"is_required": "true",
+			"flat_map_source": "eventType"
+		},
+        {
+        			"name": "address",
+        			"type": "Address",
+        			"default": "{}",
+        			"dot_name": "traffic_events.address",
+        			"ccpa": [],
+        			"is_required": "true",
+        			"flat_map_source": "address"
+        }
+	]
+}
+```
     
 ### Avro tools and code
 
 ### Proto examples 
+```proto
+syntax = "proto2";
+
+import "google/protobuf/timestamp.proto";
+import "shared.proto";
+import "godaddy.proto";
+import "journal.proto";
+import "json.proto";
+import "currency.proto";
+import "microcents.proto";
+import "core/bills/bill.proto";
+
+
+package ecomm.core.bills;
+
+option java_package = "com.company.project.models.ecomm.bills";
+option java_multiple_files = true;
+
+message SellerAccountUri {
+    option (shared.type_wrapper)=true;
+    optional string value = 1;
+}
+
+message PrimaryPayment {
+    optional BillUri payment_instrument_uri = 1 [(json.path) = "paymentInstrumentUri"];
+    optional BillUri payment_uri = 2 [(json.path) = "paymentUri"];
+    optional string authorization_id = 3 [(json.path) = "authorizationId"];
+    optional Microcents amount = 4 [(json.path) = "amount"];
+    optional string displayed_merchant_country = 5 [(json.path) = "displayedMerchantCountry"];
+    optional int32 response_code = 6 [(json.path) = "responseCode"];
+    optional int32 reason_code = 7 [(json.path) = "reasonCode"];
+}
+
+message BillSchematized {
+    option (journal.realtime_stream) = "journal-Bills-v3";
+    option (journal.s3_storage_prefix) = "journal-Bills-v3";
+    option (journal.storage_region) = "us-west-2";
+
+    optional BillUri uri = 1 [(json.path) = "uri"];
+    optional BillId bill_id = 2 [(json.path) = "billId"];
+    optional int64 revision = 3 [(json.path) = "metadata.revision"];
+    optional godaddy.CustomerId customer_id = 4 [(json.path) = "customerId"];
+    optional Currency currency = 5 [(json.path) = "currency"];
+    optional BillStatus status = 6 [(json.path) = "status"];
+    optional BillTransactionType transaction_type = 7 [(json.path) = "transactionType"];
+    optional PricingTotalFull pricing_total = 8 [(json.path) = "pricingTotal"];
+    optional google.protobuf.Timestamp created_at = 9 [(json.path) = "metadata.createdAt"];
+    optional google.protobuf.Timestamp modified_at = 10 [(json.path) = "metadata.modifiedAt"];
+    optional google.protobuf.Timestamp status_updated_at = 11 [(json.path) = "statusUpdatedAt"];
+    optional FriendlyId friendly_id = 12 [(json.path) = "friendlyId"];
+    optional BillUri updated_uri = 13 [(json.path) = "updatedUri"];
+    optional string source = 14 [(json.path) = "source"];
+    optional string transaction_id = 15 [(json.path) = "transactionId"];
+    optional BillUri original_uri = 16 [(json.path) = "originalUri"];
+    optional SellerAccountUri seller_account_uri = 17 [(json.path) = "sellerAccountUri"];
+    optional string customer_ip_address = 18 [(json.path) = "customerIpAddress"];
+    optional PrimaryPayment primary_payment = 19 [(json.path) = "primaryPayment"];
+    repeated Items first_level = 20 [(json.path) = "items[]"];
+    repeated Items second_level = 21 [(json.path) = "items[].item.items[]"];
+    repeated Items third_level = 22 [(json.path) = "items[].item.items[].item.items[]"];
+    optional Microcents discount = 23 [(json.path) = "discount"];
+    optional bool test_transaction = 24 [(json.path) = "testTransaction"];
+}
+
+message Item {
+    optional string originalKey = 1 [(json.path) = "originalKey"];
+    optional string source = 2 [(json.path) = "source"];
+    optional string item_source = 3 [(json.path) = "itemSource"];
+    optional string pay_by = 4 [(json.path) = "payBy"];
+    optional string sku = 5 [(json.path) = "sku"];
+    optional string description = 6 [(json.path) = "description"];
+    optional int32 quantity = 7 [(json.path) = "quantity"];
+    optional Microcents price = 8 [(json.path) = "price"];
+    optional Microcents shipping = 9 [(json.path) = "shipping"];
+    optional TaxesAndFees taxes_and_fees = 10 [(json.path) = "taxesAndFees"];
+    optional ProfitCenterData profit_center_data = 11 [(json.path) = "profitCenterData"];
+    optional json.JsonNode data = 12 [(json.path) = "data"];
+    optional PricingTotalFull pricing_total = 13 [(json.path) = "pricingTotal"];
+}
+
+message Items {
+    optional string key = 1 [(json.path) = "key"];
+    optional Item item = 2 [(json.path) = "item"];
+}
+
+message TaxesAndFees {
+    optional Microcents taxable_amount = 1 [(json.path) = "taxableAmount"];
+    optional Microcents tax_total = 2 [(json.path) = "taxTotal"];
+    optional Microcents fee_total = 3 [(json.path) = "feeTotal"];
+    optional Taxes taxes = 4 [(json.path) = "taxes"];
+    optional Fees fees = 5 [(json.path) = "fees"];
+}
+
+message Taxes {
+    optional Microcents tax = 1 [(json.path) = "tax"];
+    optional int32 tax_code = 2 [(json.path) = "taxCode"];
+    optional string jurisdiction_code = 3 [(json.path) = "jurisdictionCode"];
+    optional string tax_system = 4 [(json.path) = "taxSystem"];
+}
+
+message Fees {
+    optional string name = 1 [(json.path) = "name"];
+    optional Microcents fee = 2 [(json.path) = "fee"];
+}
+
+message ProfitCenterData {
+    optional string profit_center_id = 1 [(json.path) = "profitCenterId"];
+    optional Cost cost = 2 [(json.path) = "cost"];
+    optional Microcents msrp = 3 [(json.path) = "msrp"];
+    optional Microcents revenue = 4 [(json.path) = "revenue"];
+}
+
+message Cost {
+    optional Microcents amount = 1 [(json.path) = "amount"];
+    optional core.Currency currency = 2 [(json.path) = "currency"];
+}
+
+message PricingTotalFull {
+    optional Microcents tax_total = 1 [(json.path) = "taxTotal"];
+    optional Microcents shipping = 2 [(json.path) = "shipping"];
+    optional Microcents sub_total = 3 [(json.path) = "subTotal"];
+    optional Microcents total = 4 [(json.path) = "total"];
+    optional Microcents fee_total = 5 [(json.path) = "feeTotal"];
+}
+
+```
 
 ### Proto tools and code
-    
 
  
 
