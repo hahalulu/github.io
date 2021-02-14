@@ -37,7 +37,18 @@ Now imagine writing a general purpose xml or json parser, and all the ambiguitie
 
 ### How bucketing reduces shuffling?
 
+
 ### Bloom filter and how it improves the performance
+[What is bloom filter](http://hadoopnalgos.blogspot.com/2017/02/bloom-filter.html)
+[Addvantages of bloom filter](https://stackoverflow.com/questions/4282375/what-is-the-advantage-to-using-bloom-filters)
+TL;DR - Used to check if element is definitely not there.
+[Online bloom filter playground][https://llimllib.github.io/bloomfilter-tutorial/
+]
+```text
+A false positive means that the results say you have the condition you were tested for, 
+but you really don't. With a false negative, the results say you don't have a condition, but you really do.
+```
+
 
 ## Isolation levels
 - Serializable: The strongest isolation level. It ensures that committed write operations and all reads are Serializable. Operations are allowed as long as there exists a serial sequence of executing them one-at-a-time that generates the same outcome as that seen in the table. For the write operations, the serial sequence is exactly the same as that seen in the table’s history.
