@@ -111,10 +111,10 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 [Medium blog on Kinesis](https://medium.com/@yashbindlish1/amazon-kinesis-the-core-of-real-time-streaming-a543085a212f)
 
 
-
 ### Kinesis vs Kafka
 [Benchmarking Kinesis vs Kafka](https://medium.com/flo-engineering/kinesis-vs-kafka-6709c968813)
 [Kinesis vs Kafka Analysis](https://medium.com/softkraft/aws-kinesis-vs-kafka-comparison-which-is-right-for-you-8e81374d8166)
+
 
 ### What is compaction 
 [Compaction in HDFS](https://medium.com/datakaresolutions/compaction-in-hive-97a1d072400f)
@@ -130,11 +130,41 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 [Data Governance using Avro and Kafka](https://medium.com/@sderosiaux/governing-data-with-kafka-avro-ecfb665f266c)
 
 
+## Avro vs Parquet
+###COMPARISONS BETWEEN DIFFERENT FILE FORMATS
+**AVRO vs PARQUET**
+- AVRO is a row-based storage format whereas PARQUET is a columnar based storage format.
+- PARQUET is much better for analytical querying i.e. reads and querying are much more efficient than writing.
+- Write operations in AVRO are better than in PARQUET.
+- AVRO is much matured than PARQUET when it comes to schema evolution. PARQUET only supports schema append whereas AVRO supports a much-featured schema evolution i.e. adding or modifying columns.
+- PARQUET is ideal for querying a subset of columns in a multi-column table. AVRO is ideal in case of ETL operations where we need to query all the columns.
+**ORC vs PARQUET**
+- PARQUET is more capable of storing nested data.
+- ORC is more capable of Predicate Pushdown.
+- ORC supports ACID properties.
+- ORC is more compression efficient.
+
+
+[Introduction to columnar formats in spark and hadoop](https://blog.matthewrathbone.com/2019/11/21/guide-to-columnar-file-formats.html)
+[Intro to hive file format (paid medium)](https://towardsdatascience.com/new-in-hadoop-you-should-know-the-various-file-format-in-hadoop-4fcdfa25d42b)
+[Simple high level diff - Avro,ORC,Parquet](https://towardsdatascience.com/demystify-hadoop-data-formats-avro-orc-and-parquet-e428709cf3bb)
+[Medium level explanation of all formats](https://towardsdatascience.com/new-in-hadoop-you-should-know-the-various-file-format-in-hadoop-4fcdfa25d42b)
+[Medium level explanation of different file formats](https://blog.clairvoyantsoft.com/big-data-file-formats-3fb659903271)
+
+[ORC performance and compression > parquet](https://blog.cloudera.com/orcfile-in-hdp-2-better-compression-better-performance/)
+
+- Spark's optimized for parquet, hive's optimized for orc file format.
+- Parquet is implemented using the google dremel paper. Hence, parquet is intended for complex data structure types.(tree like)
+- Many of the performance improvements provided in the Stinger initiative are dependent on features of the ORC format including block level index for each column.
+  This leads to potentially more efficient I/O allowing Hive to skip reading entire blocks of data if it determines predicate values are not present there.
+  Also the Cost Based Optimizer has the ability to consider column level metadata present in ORC files in order to generate the most efficient graph.
+[Hive 3.0 ACID compliance only with ORC](https://docs.cloudera.com/HDPDocuments/HDP3/HDP-3.1.5/using-hiveql/content/hive_hive_3_tables.html)
+
+[How compression effects file splitting](http://comphadoop.weebly.com/)
 
 ### Avro examples
-
+    
 ### Avro tools and code
-
 
 ### Proto examples 
 
