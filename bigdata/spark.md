@@ -182,26 +182,41 @@ Try to use `sql.function` wherever possible. use pandas UDF's or Arrow UDF's if 
 
 ### Why stage barriers improve the read performance. 
 
-### What is tungsten's 
+[What is tungsten's project](https://databricks.com/glossary/tungsten)
 
 ### Fork join pool / Fork join task support
+
+```python
+solve(problem):
+    if problem is small enough:
+        solve problem directly (sequential algorithm)
+    else:
+        for part in subdivide(problem)
+            fork subtask to solve(part)
+        join all subtasks spawned in previous loop
+        return combined results
+```
+[Java implementation for fork join](https://www.baeldung.com/java-fork-join)
+
 
 ### Fair and FIFO task scheduling what does it do how does it help.
 
 
 Question : Say that we have a partitioned data set and there is code which runs a series of SQL 
   spark SQL queries all of them operating over the columns rather than the rows of the data
-  set there is and one of these queries is actually doing an aggregate operation over each of the each of the columns
+  set there is and one of these queries is actually doing an aggregate operation over each of the each of the columns           
   even though this is quick the other queries in the in this process are gonna take a lot of time okay so my
-  question here is in this situation should I be looking into scheduling of these these tasks itself and second
+  question here is in this situation should I be looking into scheduling of these tasks itself and second
   thing is like when you're processing columns rather than rows should we be like looking at some sort
   of like vertical partitioning rather than like the just repartition of spark which offers.
 
 [Someone else's notes on Daniel lecture](https://jilongliao.com/2019/07/15/Spark-Performance/)
 
-## Data quality checks using spark
-
-
+#CI-CD for spark
+[DataBricks CI-CD](https://databricks.com/blog/2017/10/30/continuous-integration-continuous-delivery-databricks.html)
+[DataBricks Video](https://databricks.com/blog/2017/10/30/continuous-integration-continuous-delivery-databricks.html)
+[At Metacog](https://databricks.com/blog/2016/04/06/continuous-integration-and-delivery-of-apache-spark-applications-at-metacog.html)
+[Using AWS and Github actions](https://medium.com/alterway/building-a-ci-cd-pipeline-for-a-spark-project-using-github-actions-sbt-and-aws-s3-part-1-c7d43658832d)
 
 ### Spark SQL joins & performance tuning
 [Join strategies Broadcast Hash Join, Shuffle Hash Join, Shuffle Sort Merge, Iterative Broadcast Join](https://towardsdatascience.com/strategies-of-spark-join-c0e7b4572bcf)
