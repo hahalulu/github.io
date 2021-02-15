@@ -391,8 +391,30 @@ message PricingTotalFull {
 ```
 
 ### Proto tools and code
+        
+## Data Modelling interview questions
+[Interview questions](https://www.guru99.com/data-modeling-interview-questions-answers.html)
+[Star schema vs Snowflake schema](https://www.guru99.com/star-snowflake-data-warehousing.html)
 
- 
+Dimension - Dimensions represent qualitative data. For example, product, class, plan, etc.
+A dimension table has textual or descriptive attributes. For example, the product category and product name
+are two attributes of the product dimension table.
+
+Fact / Fact Table - The fact represents quantitative data. For example, the net amount which is due.
+A fact table contains numerical data as well as foreign keys from dimensional tables.
+
+[Types of Normalization](https://www.sqlshack.com/what-is-database-normalization-in-sql-server/)
+
+Types of normalizations are: 
+
+1) first normal form
+2) second normal form
+3) third normal forms
+4) boyce-codd fourth
+5) fifth normal forms.            
+
+
+
 
 ## SQL Basics
 [SQL Window functions](https://www.toptal.com/sql/intro-to-sql-windows-functions)

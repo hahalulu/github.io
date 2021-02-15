@@ -336,10 +336,6 @@ The recommended number of partitions is around 3 or 4 times the number of CPUs i
 ### What is synthetic keys in hive? What are they used for?
 
 
-## Data Modelling interview questions
-[Interview questions](https://www.guru99.com/data-modeling-interview-questions-answers.html)
-
-
 ### Create a data frame with schema attached.
 ```sparksql
 spark.createDataFrame(vals, schema=schema)
