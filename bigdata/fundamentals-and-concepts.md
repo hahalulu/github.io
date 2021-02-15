@@ -394,3 +394,94 @@ message PricingTotalFull {
 
  
 
+## SQL Basics
+[SQL Window functions](https://www.toptal.com/sql/intro-to-sql-windows-functions)
+
+### Over function
+The OVER clause is what specifies a window function and must always be included in the statement.
+The default in an OVER clause is the entire rowset. As an example, let’s look at an employee table in a company database
+and show the total number of employees on each row, along with each employee’s info, including when they started with the company.
+
+```sql
+SELECT COUNT(*) OVER() As NumEmployees, firstname, lastname, date_started
+FROM Employee
+ORDER BY date_started;
+```
+But now, let’s say we wish to show the number of employees who started in the same month as the employee in the row.
+We will need to narrow or restrict the count to just that month for each row. How is that done?
+We use the window `PARTITION` clause, like so:
+
+```sql
+SELECT COUNT(*) OVER (PARTITION BY MONTH(date_started),YEAR(date_started)) 
+As NumPerMonth, 
+DATENAME(month,date_started)+' '+DATENAME(year,date_started) As TheMonth,
+firstname, lastname
+FROM Employee
+ORDER BY date_started;
+```
+
+let’s say we not only wanted to find out how many employees started in the same month,
+but we want to show in which order they started that month.For that, we can use the familiar `ORDER BY` clause.
+ However, within a window function, `ORDER BY` acts a bit diffrently than it does at the end of a query.
+
+```sql
+SELECT COUNT(*) OVER (PARTITION BY MONTH(date_started), YEAR(date_started) 
+ORDER BY date_started) As NumThisMonth,
+    DATENAME(month,date_started)+' '+DATENAME(year,date_started) As TheMonth,
+    firstname, lastname, date_started
+FROM Employee
+ORDER BY date_started;
+```
+
+### Rank functions
+**ROW_NUMBER()**
+- Gives a sequential count within a given partition (but with the absence of a partition, it goes through all rows)
+**RANK()**
+- Gives the rank of each row based on the ORDER BY clause. It shows ties, and then skips the next ranking.
+**DENSE_RANK()**
+- Also shows ties, but then continues with the next consecutive value as if there were no tie.
+
+```text
+StartingRank	EmployeeRank	DenseRank	TheMonth	        firstname	    lastname	    date_started
+1	                1	            1	    January 2019	    John	        Smith	        2019-01-01
+2	                2	            2	    February 2019	    Sally	        Jones	        2019-02-15
+3	                2	            2	    February 2019	    Sam	            Gordon	        2019-02-18
+4	                4	            3	    March 2019	        Julie	        Sanchez	        2019-03-19                      
+```
+## Rows and Range
+
+```sql
+SELECT OrderYear, OrderMonth, TotalDue,
+    SUM(TotalDue) OVER(ORDER BY OrderYear, OrderMonth ROWS BETWEEN 
+UNBOUNDED PRECEDING AND 1 PRECEDING) AS 'LaggingRunningTotal'
+FROM sales_products;
+```
+
+```sql
+SELECT OrderYear, OrderMonth, TotalDue,
+    SUM(TotalDue) OVER(ORDER BY OrderYear, OrderMonth ROWS BETWEEN 
+UNBOUNDED PRECEDING AND 1 PRECEDING) AS 'LaggingRunningTotal'
+FROM sales_products;
+```
+Range will include those rows in the window frame which have the same ORDER BY values as the current row.
+Thus, it’s possible that you can get duplicates with RANGE if the ORDER BY is not unique.
+
+Available window options
+```text
+BETWEEN
+{UNBOUNDED PRECEDING | offset { PRECEDING | FOLLOWING }
+| CURRENT ROW}
+AND
+{UNBOUNDED FOLLOWING | offset { PRECEDING | FOLLOWING }
+| CURRENT ROW}
+```
+
+For example, let’s say you want to show on each row a sales figure for the current month,
+and the difference between last month’s sale figure:
+
+```sql
+SELECT id, OrderMonth, OrderYear, product, sales, 
+sales - LAG(sales,1) OVER (PARTITION BY product ORDER BY OrderYear, OrderMonth) As sales_change
+FROM sales_products
+WHERE sale_year = 2019;
+```

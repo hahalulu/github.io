@@ -340,6 +340,11 @@ The recommended number of partitions is around 3 or 4 times the number of CPUs i
 [Interview questions](https://www.guru99.com/data-modeling-interview-questions-answers.html)
 
 
+### Create a data frame with schema attached.
+```sparksql
+spark.createDataFrame(vals, schema=schema)
+```
+
 ### Defining schema in spark 
 
 ```sparksql
@@ -368,13 +373,48 @@ binary_files_df = (spark.read.format("binaryFile")
   .load(path))
 binary_files_df.show(5)
 ```
+### write to parquet
+```sparksql
+df.write.parquet(...)
+```
+
+### condition when-otherwise on column
+```sparksql
+df_nextdate = df_nextdate.withColumn('next_timestamp', when(df_nextdate.next_timestamp.isNull(),
+                                   to_timestamp(lit("2038-01-19 03:14:07")))
+                  .otherwise(to_timestamp(df_nextdate.next_timestamp)))
+```
+
+### Regex extract
+```sparksql
+df_gmsd = df_gmsd.withColumn('market_legacyname',
+                             regexp_extract(concat_ws(',', 'attributes'), 'Market:([^,]+)',1))
+```
 
 
+### Row Number
+```sparksql
+df_lastrec = df_lastrec.withColumn('rnk', row_number()
+                   .over(Window
+                         .partitionBy(
+                             "zipcode")
+                         .orderBy(desc("update_id"))))
+```
 
-
-
-
-
+### Lead function
+```sparksql
+df_final = df_final.withColumn('end_date', lead('eventtimestamp_utc' , 1)
+                           .over(Window
+                                 .partitionBy('zipcode','propertytype')
+                                 .orderBy('zipcode', 'propertytype', 'eventtimestamp_utc', desc('status'), 'ruleId')))
+```
+### Lag function
+```sparksql
+df_final = df_final.withColumn('md5val_prev', lag('md5val', 1, 0)
+                  .over(Window
+                        .partitionBy('zipcode', 'propertytype')
+                        .orderBy('zipcode', 'propertytype','eventtimestamp_utc', 'status', 'ruleId')))
+```
 
 
 
