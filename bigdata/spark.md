@@ -212,7 +212,20 @@ Question : Say that we have a partitioned data set and there is code which runs 
 
 [Someone else's notes on Daniel lecture](https://jilongliao.com/2019/07/15/Spark-Performance/)
 
-#CI-CD for spark
+##Memory Tuning for spark
+[Basic memory configuration](https://medium.com/analytics-vidhya/apache-spark-memory-management-49682ded3d42)
+
+```text
+JVM Heap memory
+    - Spark Memory (0.75 of heap)
+        1. Executor Memory : It's mainly used to store temporary data in the calculation process of Shuffle, Join, Sort, Aggregation, etc. 
+        2. Storage Memory : It's mainly used to store Spark cache data, such as RDD cache, Broadcast variable, Unroll data, and so on.
+    - User Memory ( It's mainly used to store the data needed for RDD conversion operations, such as the information for RDD dependency. (~0.25 MB)
+    - Reserved Memory (Reserved for system and spark's internal objects)(300 MB)
+```
+
+
+##CI-CD for spark
 [DataBricks CI-CD](https://databricks.com/blog/2017/10/30/continuous-integration-continuous-delivery-databricks.html)
 [DataBricks Video](https://databricks.com/blog/2017/10/30/continuous-integration-continuous-delivery-databricks.html)
 [At Metacog](https://databricks.com/blog/2016/04/06/continuous-integration-and-delivery-of-apache-spark-applications-at-metacog.html)
