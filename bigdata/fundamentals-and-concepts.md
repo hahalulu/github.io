@@ -84,6 +84,9 @@ but you really don't. With a false negative, the results say you don't have a co
 [Isolation levels](https://docs.databricks.com/delta/optimizations/isolation-level.html)
     
 ### Data Skipping and Z-ordering
+
+Z-ordering is an I/O pruning operation.
+
 - [Data Skipping and Z-ordering in Delta lake](https://engineering.salesforce.com/boost-delta-lake-performance-with-data-skipping-and-z-order-75c7e6c59133)
 - [Databricks optimization technique](https://docs.databricks.com/delta/optimizations/file-mgmt.html#compaction-bin-packing)
 
@@ -135,7 +138,7 @@ ii. For Solving Conflicts Optimistically, uses  mutual exclusion.
 
 [How to achieve strict ordering in kafka](https://www.cloudkarafka.com/blog/2018-08-21-faq-apache-kafka-strict-ordering.html)
 
-[Read topic from beginning](https://riptutorial.com/apache-kafka/example/19390/how-can-i-read-topic-from-its-beginning)
+[How to Read topic from beginning](https://riptutorial.com/apache-kafka/example/19390/how-can-i-read-topic-from-its-beginning)
 
 [Kafka storage internals](https://medium.com/@durgaswaroop/a-practical-introduction-to-kafka-storage-internals-d5b544f6925f#:~:text=To%20confirm%20that%20the%20messages,what's%20inside%20that%20log%20file.&text=Kafka%20stores%20all%20the%20messages,also%20called%20as%20the%20Offset%20.)
 

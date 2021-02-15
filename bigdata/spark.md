@@ -31,9 +31,176 @@ Node 3 = 7,8,9 + (4,5,6)
 Notice that Node 1 and Node 3 did not require its original data to move.
 ```
 
-**Difference between coalesce and repartition**
+### Difference between coalesce and repartition
 
-coalesce uses existing partitions to minimize the amount of data that's shuffled. repartition creates new partitions and does a full shuffle. coalesce results in partitions with different amounts of data (sometimes partitions that have much different sizes) and repartition results in roughly equal sized partitions.
+coalesce uses existing partitions to minimize the amount of data that's shuffled. repartition creates new partitions
+and does a full shuffle. coalesce results in partitions with different amounts of data (sometimes partitions that
+have much different sizes) and repartition results in roughly equal sized partitions.
+
+### Why MSCK REPAIR is an expensive operation
+
+`MSCK REPAIR TABLE` can be a costly operation, because it needs to scan the table's sub-tree in the file system (the S3 bucket).
+ Multiple levels of partitioning can make it more costly, as it needs to traverse additional sub-directories.
+ Assuming all potential combinations of partition values occur in the data set, this can turn into a combinatorial explosion.
+
+If you are adding new partitions to an existing table, then you may find that it's more efficient to run `ALTER TABLE ADD PARTITION`
+commands for the individual new partitions. This avoids the need to scan the table's entire sub-tree in the file system.
+It is less convenient than simply running `MSCK REPAIR TABLE`, but sometimes the optimization is worth it. A viable strategy
+is often to use `MSCK REPAIR TABLE` for an initial import, and then use `ALTER TABLE ADD PARTITION` for ongoing maintenance
+as new data gets added into the table.
+
+If it's really not feasible to use `ALTER TABLE ADD PARTITION` to manage the partitions directly,
+then the execution time might be unavoidable. Reducing the number of partitions might reduce execution time,
+because it won't need to traverse as many directories in the file system. Of course, then the partitioning is different,
+which might impact query execution time, so it's a trade-off.
+
+## Spark transformation is lazy and it's advantages
+
+For transformations, Spark adds them to a DAG of computation and only when driver requests some data, does this DAG actually gets executed.
+
+One advantage of this is that Spark can make many optimization decisions after it had a chance to look at the DAG in entirety.
+This would not be possible if it executed everything as soon as it got it.
+
+For example -- if you executed every transformation eagerly, what does that mean?
+Well, it means you will have to materialize that many intermediate datasets in memory.
+This is evidently not efficient -- for one, it will increase your GC costs.
+(Because you're really not interested in those intermediate results as such.
+Those are just convnient abstractions for you while writing the program.) 
+So, what you do instead is -- you tell Spark what is the eventual answer you're interested and it figures out best way to get there.
+
+## Spark Transformation vs Action
+
+[Spark Transformation vs Action](https://medium.com/@aristo_alex/how-apache-sparks-transformations-and-action-works-ceb0d03b00d0)
+
+
+## Spark architecture 
+```text
+Cluster
+    - Driver 
+    - Executor (Memory / Disk) (Cores / Task Slots)
+    - Actions -> (One or more transformations (1 or more) -> Job->(Stages 1 or more)->(Tasks 1 or more)
+    - Only task interacts with H/W.(tasks in same stage performs same transformation but on different data.
+    - If a different operation / transformation needs to be performed it needs to be in a different stage.
+    - 1 Task == 1 partition == 1 slot == 1 core.
+```
+
+### Spark partitions
+
+- Firstly, spark partition is not the same as hive partition
+- spark partition can be divided into 3
+    1. Input (Map Phase) - controlled by parallelism and `sql.files.maxPartitionBytes`
+    2. Shuffle - controlled by `sql.shuffle.partitions` 
+    3. Output (Reduce) - Coalesce(n), Repartition(n) or something like `df.write.option(maxRecordsPerFile, N)`
+- Rule of thumb for determing shuffle partitions required for a job.
+
+```text
+Output target sixe for shuffle : ~200mb
+partition count for shuffle would be : input size to the shuffle stage / output target size 
+ex:
+shuffle input stage : 210GB
+
+shuffle partitions = 2100000MB/200MB = 1050 
+so the shuffle partition should be 1050 partitions. 
+but if there are 2000 cores avaialble then we should use 2000 as the shuffle partition.
+
+Optimize further by using the ceiling of core count 
+
+so total partitions for shuffle = Math.ceil(( Input size to shuffle / target size) / total cores) * total cores
+By this way you ensure that you are always using all the cores effectively.
+
+```
+- After the shuffle stage if there are too many other transformation before eventually writing it out it's better
+to create some sort of stage barrier. By this way we can reduce the total imbalance on the output file size.
+- use `df.localCheckpoint().partition(n).write()...` for creating local stage barrier.
+
+
+### Advance Optimization
+- Look for balance in the jobs.
+- `df.cache = df.persist(MEMORY_AND_DISK)` remember that persist actually uses the same internal memory that is 
+used by other operations like shuffle and join. So persist with care.
+- Use persist when you find commanlity or find something repetitive. Find out the memory fraction that is required for spark in terms of heap and non heap.
+- Also unpersist whatever you had persisted so that the memory is freed up for other using the same cluster...
+- How dbio cache helps minimize data scans.
+
+
+### JoinOptimization
+- BroadCast Join are the fastest but be careful when using it. It's used when one side of the join is actually less
+than `sql.auto.autoBroadCastJoinThreshold` default (10 m)
+Risk associated with BCJ is 
+    1. What if there is not enough driver memory
+    2. What if DF size is > `driver.maxResultSize`
+    3. What is DF size is > single executor available memory size.
+    
+Make sure you have validation functions to make sure that all these are caught.
+
+- Persistence vs Broadcast 
+    1. Assume, you have 12 GB dataframe and you persist them in 6 partitions across 3 executors. so 4gb in each executor.
+    2. Now in a Broadcast join you will have the same thing as step 1 which will be collected and sent to the driver
+    which will in turn send it to the executors i.e 3 executors will be broadcasted 12 Gb . so total 36 + 12 Gb from step
+    1 since that is not yet Garbage collected making it 48GB for Broadcast join.
+    
+Note: So whenever the BCJ is deserialized and row compressed they take more space than what we initially assumption so account for that.
+`data1.join(broadcast(data2), data1.id == data2.id)`
+
+skew data example with salting fix:
+```python
+df.groupByKey("city","state").agg(f(x)).orderBy(col, ascending=False)
+salt = random(0,spark.cong.get(shuffle.partitions) - 1)
+df.withColumn("salt", lit(salt))
+  .groupByKey("city","state", "salt")
+  .agg(f(x))
+  .drop("salt")
+  .orderBy(col, ascending=False)
+```
+
+- Try to use `null safe equality` for nulls in the datasets. use `isolated salting` for avoiding nulls. In this 
+you basically only apply high salting to columns with `null`.
+
+- You should use `Not exists` instead on `Not in` in SQL.
+
+- Range Join optimization?? Not explained check reference.
+
+- Don't use distinct instead use `approxCountDistinct()` 5% margin of error.
+- `dropDuplicates before JOIN or groupBy` . `dropDuplicates` is an alias.
+ 
+If you can use an explode and `sql.functions()` instead of doing `map` or `flatmap` that is usually better.
+If you are using primitives in UDF's it's usually not vectorized and is not gonna perform that well.
+Try to use `sql.function` wherever possible. use pandas UDF's or Arrow UDF's if not available in function
+
+**Summary**
+- Utilize Data Skipping / Partition Pruning to narrow down (Lazy Loading)
+- Maximize your hardware
+- Right size spark partitions
+- balance
+- optimized joins
+- minimize data movements
+- minimize repetitions
+- only use vectorized UDF's
+
+
+### What are accumulator variables??
+
+### Why stage barriers improve the read performance. 
+
+### What is tungsten's 
+
+### Fork join pool / Fork join task support
+
+### Fair and FIFO task scheduling what does it do how does it help.
+
+
+Question : Say that we have a partitioned data set and there is code which runs a series of SQL 
+  spark SQL queries all of them operating over the columns rather than the rows of the data
+  set there is and one of these queries is actually doing an aggregate operation over each of the each of the columns
+  even though this is quick the other queries in the in this process are gonna take a lot of time okay so my
+  question here is in this situation should I be looking into scheduling of these these tasks itself and second
+  thing is like when you're processing columns rather than rows should we be like looking at some sort
+  of like vertical partitioning rather than like the just repartition of spark which offers.
+
+[Someone else's notes on Daniel lecture](https://jilongliao.com/2019/07/15/Spark-Performance/)
+
+## Data quality checks using spark
+
 
 
 ### Spark SQL joins & performance tuning
