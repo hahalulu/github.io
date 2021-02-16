@@ -104,6 +104,81 @@ public static void main(String[] args) throws Exception {
 
 
 
+## Implementing the Window for real time using processing time
+
+```java
+/**
+ * Extract user/score pairs from the event stream using processing time, via global windowing. Get
+ * periodic updates on all users' running scores.
+ */
+@VisibleForTesting
+static class CalculateUserScores
+    extends PTransform<PCollection<GameActionInfo>, PCollection<KV<String, Integer>>> {
+  private final Duration allowedLateness;
+
+  CalculateUserScores(Duration allowedLateness) {
+    this.allowedLateness = allowedLateness;
+  }
+
+  @Override
+  public PCollection<KV<String, Integer>> expand(PCollection<GameActionInfo> input) {
+    return input
+        .apply(
+            "LeaderboardUserGlobalWindow",
+            Window.<GameActionInfo>into(new GlobalWindows())
+                // Get periodic results every ten minutes.
+                .triggering(
+                    Repeatedly.forever(
+                        AfterProcessingTime.pastFirstElementInPane().plusDelayOf(TEN_MINUTES)))
+                .accumulatingFiredPanes()
+                .withAllowedLateness(allowedLateness))
+        // Extract and sum username/score pairs from the event data.
+        .apply("ExtractUserScore", new ExtractAndSumScore("user"));
+  }
+}
+```
+
+## Implementation of Window for real time using event time
+
+```java
+
+// Extract team/score pairs from the event stream, using hour-long windows by default.
+@VisibleForTesting
+static class CalculateTeamScores
+    extends PTransform<PCollection<GameActionInfo>, PCollection<KV<String, Integer>>> {
+  private final Duration teamWindowDuration;
+  private final Duration allowedLateness;
+
+  CalculateTeamScores(Duration teamWindowDuration, Duration allowedLateness) {
+    this.teamWindowDuration = teamWindowDuration;
+    this.allowedLateness = allowedLateness;
+  }
+
+  @Override
+  public PCollection<KV<String, Integer>> expand(PCollection<GameActionInfo> infos) {
+    return infos
+        .apply(
+            "LeaderboardTeamFixedWindows",
+            Window.<GameActionInfo>into(FixedWindows.of(teamWindowDuration))
+                // We will get early (speculative) results as well as cumulative
+                // processing of late data.
+                .triggering(
+                    AfterWatermark.pastEndOfWindow()
+                        .withEarlyFirings(
+                            AfterProcessingTime.pastFirstElementInPane()
+                                .plusDelayOf(FIVE_MINUTES))
+                        .withLateFirings(
+                            AfterProcessingTime.pastFirstElementInPane()
+                                .plusDelayOf(TEN_MINUTES)))
+                .withAllowedLateness(allowedLateness)
+                .accumulatingFiredPanes())
+        // Extract and sum teamname/score pairs from the event data.
+        .apply("ExtractTeamScore", new ExtractAndSumScore("team"));
+  }
+}
+```
+
+
 ## Implementation of stateful ParDo
 ```java
 /**
@@ -311,4 +386,38 @@ KinesisIO
         .withInitialPositionInStream(InitialPositionInStream.TRIM_HORIZON)
         .withAWSClientsProvider(KinesisClientsProvider.of(runMode))
         .withArrivalTimeWatermarkPolicy();
+```
+
+
+## Triggers
+Single global window for its windowing function. This can be useful when you want your pipeline to 
+provide periodic updates on an unbounded data set — for example, a running average of all data provided
+to the present time, updated every N seconds or every N elements.
+
+
+### Event based trigger
+```java
+      // Create a bill at the end of the month.
+        AfterWatermark.pastEndOfWindow()
+            // During the month, get near real-time estimates.
+            .withEarlyFirings(
+                AfterProcessingTime
+                    .pastFirstElementInPane()
+                    .plusDuration(Duration.standardMinutes(1))
+            // Fire on any late data so the bill can be corrected.
+            .withLateFirings(AfterPane.elementCountAtLeast(1))
+
+```
+
+```java
+  PCollection<String> pc = ...;
+  pc.apply(Window.<String>into(FixedWindows.of(1, TimeUnit.MINUTES))
+                               .triggering(AfterProcessingTime.pastFirstElementInPane()
+                                                              .plusDelayOf(Duration.standardMinutes(1)))
+                               .discardingFiredPanes());
+
+```
+
+```java
+AfterPane.elementCountAtLeast()
 ```

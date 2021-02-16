@@ -463,6 +463,18 @@ ORDER BY date_started;
 **DENSE_RANK()**
 - Also shows ties, but then continues with the next consecutive value as if there were no tie.
 
+```sql
+SELECT 
+ROW_NUMBER() OVER (ORDER BY YEAR(date_started),MONTH(date_started)) 
+As StartingRank,
+    RANK() OVER (ORDER BY YEAR(date_started),MONTH(date_started)) As EmployeeRank,
+    DENSE_RANK() OVER (ORDER BY YEAR(date_started),MONTH(date_started)) As DenseRank,
+    DATENAME(month,date_started)+' '+DATENAME(year,date_started) As TheMonth,
+    firstname, lastname, date_started
+FROM Employee
+ORDER BY date_started;
+```
+
 ```text
 StartingRank	EmployeeRank	DenseRank	TheMonth	        firstname	    lastname	    date_started
 1	                1	            1	    January 2019	    John	        Smith	        2019-01-01
